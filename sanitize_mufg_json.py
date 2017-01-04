@@ -44,11 +44,13 @@ def provide_type_explictly(rows):
 
     for r in rows:
         if len(r[status_key]) > 0:
-            r[type_key] = payment_type
+            copied_row = copy.deepcopy(r)
+            copied_row[type_key] = payment_type
+            yield copied_row
         else:
             if installment_head in r[store_key]:
                 payment_type = PaymentType.INSTALLMENT
-        yield r
+            yield r
 
 
 def filter_payment(rows):
