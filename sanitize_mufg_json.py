@@ -14,8 +14,9 @@ def main():
         lambda rows, f: f(rows),
         [
             provide_type_explictly,
-            extract_payment,
-            sanitize_installment
+            filter_payment,
+            sanitize_store_and_note,
+            extract_installment
         ],
         json.load(sys.stdin)
     )
@@ -40,13 +41,13 @@ def provide_type_explictly(rows):
         yield r
 
 
-def extract_payment(rows):
+def filter_payment(rows):
     status_key = '確定情報'
     return filter(lambda x: len(x[status_key]) > 0, rows)
 
 
-def sanitize_installment(rows):
-    conversion = {
+def sanitize_store_and_note(rows):
+    translation = {
         ord('０'): '0',
         ord('１'): '1',
         ord('２'): '2',
@@ -57,28 +58,37 @@ def sanitize_installment(rows):
         ord('７'): '7',
         ord('８'): '8',
         ord('９'): '9',
-        ord('，'): ','
+        ord('，'): ',',
+        ord('\u3000'): ' '
     }
 
-    def sanitize(row):
-        installment_key = '現地通貨額・通貨名称・換算レート'
-        payment_key = 'ご利用金額（円）'
+    store_key = 'ご利用店名（海外ご利用店名／海外都市名）'
+    note_key = '現地通貨額・通貨名称・換算レート'
 
-        installment = row.get(installment_key)
-        if len(installment) == 0:
+    def translate(row):
+        copied_row = copy.deepcopy(row)
+        copied_row[store_key] = row[store_key].translate(translation).strip()
+        copied_row[note_key] = row[note_key].translate(translation).strip()
+        return copied_row
+
+    return map(translate, rows)
+
+
+def extract_installment(rows):
+    def extract(row):
+        note_key = '現地通貨額・通貨名称・換算レート'
+        payment_key = 'ご利用金額（円）'
+        type_key = 'type'
+
+        if row[type_key] != 'installment':
             return row
 
-        pattern = re.compile('\u3000+')
-        payment = first(lambda x: len(x) > 0, pattern.split(installment))
-        normalized_payment = payment.translate(conversion)
-
         copied_row = copy.deepcopy(row)
-        copied_row[payment_key] = normalized_payment
-        copied_row[installment_key] = ''
+        copied_row[payment_key] = first(lambda x: len(x) > 0, row[note_key].split())
 
         return copied_row
 
-    return map(sanitize, rows)
+    return map(extract, rows)
 
 
 def first(f, iterable):
