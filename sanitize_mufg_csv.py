@@ -32,7 +32,7 @@ def provide_type_explictly(rows):
     status_key = '確定情報'
     store_key = 'ご利用店名（海外ご利用店名／海外都市名）'
     type_key = 'type'
-    installment_head = '分割払い既存ご利用明細'
+    installment_head = '分割払い'
     payment_type = 'normal'
 
     for r in rows:
