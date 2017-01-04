@@ -13,6 +13,7 @@ def main():
     rows = reduce(
         lambda rows, f: f(rows),
         [
+            provide_type_explictly,
             extract_payment,
             sanitize_installment
         ],
@@ -27,8 +28,25 @@ def replace_spaces(rows):
     return rows
 
 
+def provide_type_explictly(rows):
+    status_key = '確定情報'
+    store_key = 'ご利用店名（海外ご利用店名／海外都市名）'
+    type_key = 'type'
+    installment_head = '分割払い既存ご利用明細'
+    payment_type = 'normal'
+
+    for r in rows:
+        if len(r[status_key]) > 0:
+            r[type_key] = payment_type
+        else:
+            if installment_head in r[store_key]:
+                payment_type = 'installment'
+        yield r
+
+
 def extract_payment(rows):
-    return filter(lambda x: len(x['確定情報']) > 0, rows)
+    status_key = '確定情報'
+    return filter(lambda x: len(x[status_key]) > 0, rows)
 
 
 def sanitize_installment(rows):
