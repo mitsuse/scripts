@@ -24,19 +24,20 @@ class PaymentType:
 
 
 def main():
-    rows = reduce(
-        lambda rows, f: f(rows),
-        [
-            provide_type_explictly,
-            filter_payment,
-            sanitize_store_and_note,
-            extract_installment
-        ],
-        json.load(sys.stdin)
+    rows = list(
+        reduce(
+            lambda rows, f: f(rows),
+            [
+                provide_type_explictly,
+                filter_payment,
+                sanitize_store_and_note,
+                extract_installment
+            ],
+            json.load(sys.stdin)
+        )
     )
 
-    for r in rows:
-        print(r)
+    print(json.dumps(rows))
 
 
 def provide_type_explictly(rows):
