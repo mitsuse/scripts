@@ -24,10 +24,6 @@ def main():
         print(r)
 
 
-def replace_spaces(rows):
-    return rows
-
-
 def provide_type_explictly(rows):
     status_key = '確定情報'
     store_key = 'ご利用店名（海外ご利用店名／海外都市名）'
