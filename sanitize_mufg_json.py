@@ -9,6 +9,20 @@ import sys
 from functools import reduce
 
 
+status_key = '確定情報'
+store_key = 'ご利用店名（海外ご利用店名／海外都市名）'
+payment_key = 'ご利用金額（円）'
+note_key = '現地通貨額・通貨名称・換算レート'
+type_key = 'type'
+
+installment_head = '分割払い'
+
+
+class PaymentType:
+    NORMAL = 'normal'
+    INSTALLMENT = 'installment'
+
+
 def main():
     rows = reduce(
         lambda rows, f: f(rows),
@@ -26,23 +40,18 @@ def main():
 
 
 def provide_type_explictly(rows):
-    status_key = '確定情報'
-    store_key = 'ご利用店名（海外ご利用店名／海外都市名）'
-    type_key = 'type'
-    installment_head = '分割払い'
-    payment_type = 'normal'
+    payment_type = PaymentType.NORMAL
 
     for r in rows:
         if len(r[status_key]) > 0:
             r[type_key] = payment_type
         else:
             if installment_head in r[store_key]:
-                payment_type = 'installment'
+                payment_type = PaymentType.INSTALLMENT
         yield r
 
 
 def filter_payment(rows):
-    status_key = '確定情報'
     return filter(lambda x: len(x[status_key]) > 0, rows)
 
 
@@ -62,9 +71,6 @@ def sanitize_store_and_note(rows):
         ord('\u3000'): ' '
     }
 
-    store_key = 'ご利用店名（海外ご利用店名／海外都市名）'
-    note_key = '現地通貨額・通貨名称・換算レート'
-
     def translate(row):
         copied_row = copy.deepcopy(row)
         copied_row[store_key] = row[store_key].translate(translation).strip()
@@ -76,10 +82,6 @@ def sanitize_store_and_note(rows):
 
 def extract_installment(rows):
     def extract(row):
-        note_key = '現地通貨額・通貨名称・換算レート'
-        payment_key = 'ご利用金額（円）'
-        type_key = 'type'
-
         if row[type_key] != 'installment':
             return row
 
