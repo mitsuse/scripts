@@ -31,6 +31,7 @@ def main():
                 provide_type_explictly,
                 filter_payment,
                 sanitize_store_and_note,
+                sanitize_installament_description,
                 extract_installment
             ],
             json.load(sys.stdin)
@@ -94,6 +95,17 @@ def extract_installment(rows):
         return copied_row
 
     return map(extract, rows)
+
+
+def sanitize_installament_description(rows):
+    pattern = re.compile('[0-9]+\s*(回払い|ｶｲﾊﾞﾗｲ)\s*([0-9]+\s*(回目|ｶｲﾒ))?')
+
+    def sanitize(row):
+        copied_row = copy.deepcopy(row)
+        copied_row[store_key] = pattern.sub('', row[store_key]).strip()
+        return copied_row
+
+    return map(sanitize, rows)
 
 
 def first(f, iterable):
