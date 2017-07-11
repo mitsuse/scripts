@@ -5,12 +5,16 @@
 def main(args):
     import sys
     import json
+
     raw_classifiy = classifiers[args.target]
     classify = inverse(raw_classifiy) if args.negation else raw_classifiy
+
     with open(args.input) as f:
         dump_json = json.load(f)
+
     original = dump_json['list']
     classified = {key: value for key, value in original.items() if classify(value) }
+
     if args.evaluate:
         evaluation = Evaluation(original, classified)
         print('total: {}'.format(evaluation.total))
