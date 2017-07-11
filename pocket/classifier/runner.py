@@ -10,7 +10,7 @@ def run(classify):
 def parse(args):
     from argparse import ArgumentParser
     parser = ArgumentParser()
-    parser.add_argument('--input', type=str)
+    parser.add_argument('--input', required=True, type=str)
     parser.add_argument('--evaluate', default=False, action='store_true')
     parser.add_argument('--negation', default=False, action='store_true')
     return parser.parse_args(args)
